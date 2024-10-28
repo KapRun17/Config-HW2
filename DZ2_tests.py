@@ -3,7 +3,7 @@ import pytest
 from unittest import mock
 from DZ2 import get_dependencies, build_dependency_graph, visualize_graph
 
-# Тест функции get_dependencies_graph
+# Тест функции get_dependencies_graph при успешном получение зависимостей
 def test_get_dependencies_success():
     package_name = 'pip'
     expected_dependencies = []
