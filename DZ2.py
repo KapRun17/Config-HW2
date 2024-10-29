@@ -1,33 +1,41 @@
 import argparse
-import subprocess
+import requests
 import graphviz
 
 def get_dependencies(package_name):
-    """Получение зависимостей пакета с помощью pip (без сторонних средств)."""
-    result = subprocess.run(
-        ['pip', 'show', package_name],
-        capture_output=True,
-        text=True
-    )
+    """Получение зависимостей пакета с помощью API реестра пакетов."""
     
-    if result.returncode != 0:
-        raise Exception(f"Ошибка получения зависимостей для {package_name}: {result.stderr}")
+    url = f"https://pypi.org/pypi/{package_name}/json"  # URL API для получения информации о пакете
+    response = requests.get(url)
+    
+    if response.status_code != 200:
+        raise Exception(f"Ошибка получения зависимостей для {package_name}: {response.text}")
 
+    data = response.json()
+    requires_dist = data['info'].get('requires_dist', [])
+
+    # Обработка формата зависимостей
     dependencies = []
-    for line in result.stdout.splitlines():
-        if line.startswith('Requires:'):
-            requirements = line.split(':')[1].strip()
-            dependencies = [dep.strip() for dep in requirements.split(',')] if requirements else []
-            break
+    if requires_dist:
+        for dep in requires_dist:
+            name = dep.split(';')[0].strip()  # Берем только имя пакета без условий
+            name = name.split('>')[0].split('<')[0].split('=')[0].split(' ')[0].split('[')[0].split('(')[0].split('!')[0]
+            if ',' in name:  # Если есть несколько зависимостей, разбиваем их
+                name_parts = [n.strip() for n in name.split(',')]
+                dependencies.extend(name_parts)
+            else:
+                dependencies.append(name)
+
     print(f"Зависимости для {package_name}: {dependencies}")
     return dependencies
 
-def build_dependency_graph(package_name, visited=None):
-    """Рекурсивно строит граф зависимостей."""
+def build_dependency_graph(package_name, level=0, visited=None):
+    """Рекурсивно строит граф зависимостей с учетом уровня вложенности."""
     if visited is None:
         visited = set()
     
-    if package_name in visited:
+    # Проверка, было ли имя пакета посещено, и уровень вложенности
+    if package_name in visited or level >= 2:
         return {}
     
     visited.add(package_name)
@@ -36,7 +44,7 @@ def build_dependency_graph(package_name, visited=None):
     graph = {package_name: dependencies}
     
     for dep in dependencies:
-        graph.update(build_dependency_graph(dep, visited))
+        graph.update(build_dependency_graph(dep, level + 1, visited))
     
     return graph
 
