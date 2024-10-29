@@ -50,6 +50,6 @@
   Результаты прогона тестов
 ![Результаты прогона тестов (.png)](./img/DZ2_tests.png)
   Граф зависимостей для пакета `matplotlib`
-![Граф зависимостей для пакета `matplotlib` (.png)](./img/DZ2_matplotlib_result (2).png)
+![Граф зависимостей для пакета `matplotlib` (.png)](.img/DZ2_matplotlib_results.png)
   Граф зависимостей для пакета `matplotlib`, построенный с помощью `Graphviz`
 ![Граф зависимостей для пакета `matplotlib`, построенный с помощью `Graphviz` (.png)](./img/new_graph.png)
